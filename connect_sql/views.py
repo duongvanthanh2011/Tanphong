@@ -65,6 +65,16 @@ class SanPhamAPIView(APIView):
                          'chiphi':serializers_chiphi.data})
 
 
+class DonHangListCreateView(generics.ListCreateAPIView):
+    queryset = Donhang.objects.prefetch_related('chitietdonhang_set')
+    serializer_class = DonHangSerializer
+
+    def perform_create(self, serializer):
+        
+        return super().perform_create(serializer)
+
+
+
 class SanPhamListCreateAPIView(generics.ListAPIView):
     queryset = Sanpham.objects.prefetch_related('sanphamnguyenlieu_set__id_nguyenlieu')
     serializer_class = SanPhamSerializer
@@ -73,6 +83,15 @@ class SanPhamListCreateAPIView(generics.ListAPIView):
 class SanPhamRetrieveAPIView(generics.RetrieveAPIView):
     queryset = Sanpham.objects.all()
     serializer_class = SanPhamSerializer
+
+
+class KhachhangListView(generics.ListAPIView):
+    serializer_class = KhachHangSerializer
+
+    def get_queryset(self):
+        id_khachhang_list = self.request.data.get('id_khachhang_list', [])
+        return Khachhang.objects.filter(id_khachhang__in=id_khachhang_list)
+
 
 
 # class CongThucListCreateAPIView(generics.ListCreateAPIView):
