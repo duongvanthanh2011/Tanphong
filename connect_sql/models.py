@@ -17,6 +17,7 @@ class Giasanpham(models.Model):
     Ten = models.CharField(db_column='Ten', max_length = 200)
     Trongluong = models.FloatField(db_column='trongluong')
     Gia = models.FloatField(db_column = 'gia')
+    Soluongchai_thung = models.IntegerField(db_column = "SoLuongChai/Thung")
     class Meta:
         managed = False
         db_table = 'final_sp_gia'
@@ -35,7 +36,7 @@ class Chiphi(models.Model):
 
 
 class Chitietdonhang(models.Model):
-    id_chitietdonhang = models.BigIntegerField(db_column='id_ChiTietDonHang', primary_key=True)  # Field name made lowercase.
+    id_chitietdonhang = models.BigAutoField(db_column='id_ChiTietDonHang', primary_key=True)  # Field name made lowercase.
     id_donhang = models.ForeignKey('Donhang', models.DO_NOTHING, db_column='Id_DonHang', blank=True, null=True)  # Field name made lowercase.
     id_sanpham = models.ForeignKey('Sanpham', models.DO_NOTHING, db_column='Id_SanPham', blank=True, null=True)  # Field name made lowercase.
     trongluongnet_kg_field = models.FloatField(db_column='TrongLuongNet(KG)', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters. Field renamed because it ended with '_'.
@@ -47,7 +48,6 @@ class Chitietdonhang(models.Model):
     trongluongnet_thung_kg_field = models.FloatField(db_column='TrongLuongNet/Thung(KG)', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters. Field renamed because it ended with '_'.
     trongluonggross_thung_kg_field = models.FloatField(db_column='TrongLuongGross/Thung(KG)', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters. Field renamed because it ended with '_'.
     tonggiasanpham = models.FloatField(db_column='TongGiaSanPham', blank=True, null=True)  # Field name made lowercase.
-    soluongchai_thung = models.IntegerField(db_column='SoLuongChai/Thung', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters.
 
     class Meta:
         managed = False

@@ -4,47 +4,32 @@ from rest_framework.reverse import reverse
 from .models import *
 
 
-class ChiTietDonHangSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Chitietdonhang
-        fields = "__all__"
 
+class GiaSanPhamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Giasanpham
+        fields = "__all__"
+    
 class KhachHangSerializer(serializers.ModelSerializer):
     class Meta:
         model = Khachhang
         fields = '__all__'
 
+class ChiTietDonHangSerializer(serializers.ModelSerializer):
+    ten_sanpham = serializers.SerializerMethodField(read_only = True)
+    class Meta:
+        model = Chitietdonhang
+        fields = "__all__"
+    
+    def get_ten_sanpham(self, obj):
+        return obj.id_sanpham.ten
+
 class DonHangSerializer(serializers.ModelSerializer):
-    chitietdonhang = ChiTietDonHangSerializer(read_only = True, many = True, source = 'chitietdonhang_set')
     khachhang = KhachHangSerializer(read_only = True, source = 'id_khachhang')
     class Meta:
         model = Donhang
-        fields = [
-            'id_donhang',
-            'ngay',
-            'chuthich',
-            'contractno',
-            'shippingline',
-            'shippedper',
-            'portofloading',
-            'placeofdelivery',
-            'sailingon',
-            'billofladingno',
-            'container_sealno',
-            'tongsoluong',
-            'tonggia',
-            'donvigiatien',
-            'bookingno',
-            'khachhang',
-            'chitietdonhang'
-        ]
+        fields = "__all__"
 
-    def create(self, validated_data):
-        chitietdonhang_data = validated_data.pop('chitietdonhang')
-        donhang = Donhang.objects.create(**validated_data)
-        for chitiet_data in chitietdonhang_data:
-            Chitietdonhang.objects.create(id_donhang=donhang, **chitiet_data)
-        return donhang
 
 class NguyenlieuSerializer(serializers.ModelSerializer):
     class Meta:
@@ -91,3 +76,4 @@ class SanPhamSerializer(serializers.ModelSerializer):
         if request is None:
             return None
         return reverse('sanpham-retrieve', request=request, kwargs={'pk':obj.pk})
+    

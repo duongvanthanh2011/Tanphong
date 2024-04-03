@@ -10,7 +10,10 @@ from rest_framework import generics, mixins
 from .models import *
 from .serializers import *
 from pprint import pprint
-# Create your views here.
+
+from datetime import datetime
+
+
 
 def index(request):
     return HttpResponse("hello world")
@@ -58,21 +61,88 @@ class SanPhamAPIView(APIView):
         chiphi = Chiphi.objects.exclude(id_loaichiphi = 2)
         serializers_chiphi = ChiPhiSerializer(chiphi, many = True)
 
-
         return Response({'sanpham':serializers_sanpham.data, 
                          'khachhang':serializer_khachhang.data, 
                          'packagking':serializers_packaging.data, 
                          'chiphi':serializers_chiphi.data})
 
 
-class DonHangListCreateView(generics.ListCreateAPIView):
-    queryset = Donhang.objects.prefetch_related('chitietdonhang_set')
-    serializer_class = DonHangSerializer
+class DonHangGenericAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
+    queryset = Donhang.objects.latest('id_donhang')
 
-    def perform_create(self, serializer):
+    def convert_data_request(self, request):
+        choice_chiphi = request.data.get('chiphi') + request.data.get('packaging')
+        chiphi = Chiphi.objects.filter(id_chiphi__in = choice_chiphi)
+        gia_chiphi = sum([obj.gia for obj in chiphi])/24500
+
+        choice_sanpham = request.data.get('listProduct')
+        sanpham = Giasanpham.objects.filter(id_sanpham__in = [sp['idProduct'] for sp in choice_sanpham])
+
+        id_next_donhang = self.get_next_id_donhang()
+
+        chitietdonhang_data = [
+            {
+                "id_donhang": id_next_donhang,
+                "id_sanpham": sanpham[index].id_sanpham,
+                "ten_sanpham": sanpham[index].Ten,
+                "trongluongnet_kg_field": sanpham[index].Soluongchai_thung * sanpham[index].Trongluong * choice_sanpham[index]['quantity'],
+                "trongluonggross_kg_field": None,
+                "trongluongnet_chai_kg_field": sanpham[index].Trongluong,
+                "soluongthung": choice_sanpham[index]['quantity'],
+                "giasanpham_kg": (sanpham[index].Gia + gia_chiphi)/sanpham[index].Trongluong,
+                "soluongchai": choice_sanpham[index]['quantity'] * sanpham[index].Soluongchai_thung,
+                "trongluongnet_thung_kg_field": sanpham[index].Soluongchai_thung * sanpham[index].Trongluong,
+                "trongluonggross_thung_kg_field": None,
+                "tonggiasanpham": (sanpham[index].Gia + gia_chiphi)*choice_sanpham[index]['quantity'] * sanpham[index].Soluongchai_thung
+            }
+            for index in range(len(sanpham))
+        ]
         
-        return super().perform_create(serializer)
+        donhang_data = {
+            'id_donhang': id_next_donhang,
+            'ngay': datetime.now(),
+            'chuthich': None,
+            'contractno': request.data.get('contract'),
+            'shippingline': request.data.get('shippingLine'),
+            'shippedper': request.data.get('shippingLine'),
+            'portofloading': request.data.get('portOfLoading'),
+            'placeofdelivery': request.data.get('placeOfDelivery'),
+            'sailingon': request.data.get('sailingOn'),
+            'billofladingno': request.data.get('billOfLadingNo'),
+            'container_sealno': request.data.get('containerSealNo'),
+            'tongsoluong': sum(item['trongluongnet_kg_field'] for item in chitietdonhang_data),
+            'tonggia': sum(item['tonggiasanpham'] for item in chitietdonhang_data),
+            'donvigiatien': 'USD',
+            'bookingno': request.data.get('bookingOn'),
+            'id_khachhang': request.data.get('customer'),
+        }
 
+        return {
+            "donhang": donhang_data,
+            "chitietdonhang": chitietdonhang_data
+        }
+     
+    def get_next_id_donhang(self):
+        next_id = self.queryset.id_donhang + 1
+        while Donhang.objects.filter(id_donhang = next_id).exists():
+            next_id += 1
+        return next_id
+
+    def post(self, request, *args, **kwargs):
+        data_request = self.convert_data_request(request)
+    
+        serializers_donhang = DonHangSerializer(data = data_request['donhang'])
+        if serializers_donhang.is_valid():
+            serializers_donhang.save()
+        
+        serializers_chitietdonhang= ChiTietDonHangSerializer(data = data_request['chitietdonhang'], many = True)
+        if serializers_chitietdonhang.is_valid():
+            serializers_chitietdonhang.save()
+        
+        return Response({
+            "DonHang": serializers_donhang.data,
+            "ChiTietDonHang": serializers_chitietdonhang.data
+        })
 
 
 class SanPhamListCreateAPIView(generics.ListAPIView):
