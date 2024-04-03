@@ -67,9 +67,7 @@ class SanPhamAPIView(APIView):
                          'chiphi':serializers_chiphi.data})
 
 
-class DonHangGenericAPIView (generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin):
-    queryset = Donhang.objects.latest('id_donhang')
-
+class DonHangAPIView(APIView):
     def convert_data_request(self, request):
         choice_chiphi = request.data.get('chiphi') + request.data.get('packaging')
         chiphi = Chiphi.objects.filter(id_chiphi__in = choice_chiphi)
@@ -122,14 +120,14 @@ class DonHangGenericAPIView (generics.GenericAPIView, mixins.ListModelMixin, mix
         }
      
     def get_next_id_donhang(self):
-        next_id = self.queryset.id_donhang + 1
+        next_id = Donhang.objects.latest('id_donhang').id_donhang
         while Donhang.objects.filter(id_donhang = next_id).exists():
             next_id += 1
         return next_id
 
     def post(self, request, *args, **kwargs):
         data_request = self.convert_data_request(request)
-    
+
         serializers_donhang = DonHangSerializer(data = data_request['donhang'])
         if serializers_donhang.is_valid():
             serializers_donhang.save()
@@ -142,7 +140,7 @@ class DonHangGenericAPIView (generics.GenericAPIView, mixins.ListModelMixin, mix
                     "ChiTietDonHang": serializers_chitietdonhang.dât
                 })
             
-        Response("False")      
+        HttpResponse("False")      
 
 
 class SanPhamListCreateAPIView(generics.ListAPIView):
