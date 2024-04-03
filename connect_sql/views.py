@@ -82,7 +82,6 @@ class DonHangAPIView(APIView):
             {
                 "id_donhang": id_next_donhang,
                 "id_sanpham": sanpham[index].id_sanpham,
-                "ten_sanpham": sanpham[index].Ten,
                 "trongluongnet_kg_field": sanpham[index].Soluongchai_thung * sanpham[index].Trongluong * choice_sanpham[index]['quantity'],
                 "trongluonggross_kg_field": None,
                 "trongluongnet_chai_kg_field": sanpham[index].Trongluong,
@@ -137,7 +136,7 @@ class DonHangAPIView(APIView):
                 serializers_chitietdonhang.save()
                 return Response({
                     "DonHang": serializers_donhang.data,
-                    "ChiTietDonHang": serializers_chitietdonhang.dât
+                    "ChiTietDonHang": serializers_chitietdonhang.data
                 })
             
         HttpResponse("False")      
