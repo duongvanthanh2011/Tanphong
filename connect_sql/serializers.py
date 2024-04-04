@@ -71,9 +71,9 @@ class SanPhamSerializer(serializers.ModelSerializer):
     #         gia += nguyenlieu.id_nguyenlieu.gia * nguyenlieu.trongluong
     #     return gia/24500
     
-    # def get_url(self, obj):
-    #     request = self.context.get('request')
-    #     if request is None:
-    #         return None
-    #     return reverse('sanpham-retrieve', request=request, kwargs={'pk':obj.pk})
+    def get_url(self, obj):
+        request = self.context.get('request')
+        if request is None:
+            return None
+        return reverse('sanpham-retrieve', request=request, kwargs={'pk':obj.pk})
     
