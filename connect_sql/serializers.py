@@ -53,10 +53,10 @@ class SanPhamSerializer(serializers.ModelSerializer):
     # gia_final = serializers.SerializerMethodField()
     # trong_luong_final = serializers.SerializerMethodField()
     url = serializers.SerializerMethodField(read_only = True)
-
+    
     class Meta:
         model = Sanpham
-        fields = "__all__"
+        fields = ['url', 'id_sanpham', 'ten', 'gia', 'trongluong', 'soluongchai_thung', 'chuthich']
         # read_only_fields  = ['sanphamnguyenlieu_set', 'gia_final']
 
     # def get_trong_luong_final(self, obj):

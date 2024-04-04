@@ -2,6 +2,15 @@ from django.contrib import admin
 from .models import *
 
 # Register your models here.
-admin.site.register(Sanpham)
-admin.site.register(SanphamNguyenlieu)
-admin.site.register(Nguyenlieu)
+
+@admin.register(Sanpham)
+class SanPhamAdmin(admin.ModelAdmin):
+    list_display = ("id_sanpham", "ten", "gia", "trongluong", "chuthich", "soluongchai_thung")
+
+@admin.register(SanphamNguyenlieu)
+class SanPhamNguyenLieuAdmin(admin.ModelAdmin):
+    list_display = ("id", "id_sanpham", "id_nguyenlieu", "trongluong")
+
+@admin.register(Nguyenlieu)
+class NguyenLieuAdmin(admin.ModelAdmin):
+    list_display = ("id_nguyenlieu", "id_loainguyenlieu", "ten", "gia", "xuatxu", "chuthich")
