@@ -49,31 +49,31 @@ class ChiPhiSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SanPhamSerializer(serializers.ModelSerializer):
-    sanphamnguyenlieu_set = SanphamNguyenlieuSerializer(many=True)
-    gia_final = serializers.SerializerMethodField()
-    trong_luong_final = serializers.SerializerMethodField()
+    # sanphamnguyenlieu_set = SanphamNguyenlieuSerializer(many=True)
+    # gia_final = serializers.SerializerMethodField()
+    # trong_luong_final = serializers.SerializerMethodField()
     url = serializers.SerializerMethodField(read_only = True)
 
     class Meta:
         model = Sanpham
-        fields = ['url','id_sanpham', 'ten', 'sanphamnguyenlieu_set', 'gia_final', 'trong_luong_final']
-        read_only_fields  = ['sanphamnguyenlieu_set', 'gia_final']
+        fields = "__all__"
+        # read_only_fields  = ['sanphamnguyenlieu_set', 'gia_final']
 
-    def get_trong_luong_final(self, obj):
-        trongluong = 0
-        for nguyenlieu in obj.sanphamnguyenlieu_set.all():
-            trongluong +=  nguyenlieu.trongluong
-        return trongluong
+    # def get_trong_luong_final(self, obj):
+    #     trongluong = 0
+    #     for nguyenlieu in obj.sanphamnguyenlieu_set.all():
+    #         trongluong +=  nguyenlieu.trongluong
+    #     return trongluong
 
-    def get_gia_final(self,obj):
-        gia = 0
-        for nguyenlieu in obj.sanphamnguyenlieu_set.all():
-            gia += nguyenlieu.id_nguyenlieu.gia * nguyenlieu.trongluong
-        return gia/24500
+    # def get_gia_final(self,obj):
+    #     gia = 0
+    #     for nguyenlieu in obj.sanphamnguyenlieu_set.all():
+    #         gia += nguyenlieu.id_nguyenlieu.gia * nguyenlieu.trongluong
+    #     return gia/24500
     
-    def get_url(self, obj):
-        request = self.context.get('request')
-        if request is None:
-            return None
-        return reverse('sanpham-retrieve', request=request, kwargs={'pk':obj.pk})
+    # def get_url(self, obj):
+    #     request = self.context.get('request')
+    #     if request is None:
+    #         return None
+    #     return reverse('sanpham-retrieve', request=request, kwargs={'pk':obj.pk})
     
