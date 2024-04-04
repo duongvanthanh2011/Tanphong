@@ -5,6 +5,8 @@ from django.db import models
 class Sanpham(models.Model):
     id_sanpham = models.CharField(db_column='Id_SanPham', primary_key=True, max_length=100,unique = True)  # Field name made lowercase.
     ten = models.CharField(db_column='Ten', max_length=100)  # Field name made lowercase.
+    gia = models.FloatField(db_column='Gia'),
+    trongluong = models.FloatField(db_column = 'Trongluong'),
     chuthich = models.CharField(db_column='ChuThich', max_length=100, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
