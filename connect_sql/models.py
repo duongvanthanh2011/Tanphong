@@ -13,19 +13,7 @@ class Sanpham(models.Model):
     class Meta:
         managed = False
         db_table = 'SanPham'
-
-
-class Giasanpham(models.Model):
-    id_sanpham = models.CharField(Sanpham, db_column = 'Id_SanPham', max_length = 100, primary_key = True,)
-    Ten = models.CharField(db_column='Ten', max_length = 200)
-    Trongluong = models.FloatField(db_column='trongluong')
-    Gia = models.FloatField(db_column = 'gia')
-    Soluongchai_thung = models.IntegerField(db_column = "SoLuongChai/Thung")
-    class Meta:
-        managed = False
-        db_table = 'final_sp_gia'
-
-
+        
 class Chiphi(models.Model):
     id_chiphi = models.CharField(db_column='Id_ChiPhi', primary_key=True, max_length=20)  # Field name made lowercase.
     id_loaichiphi = models.ForeignKey('Loaichiphi', models.DO_NOTHING, db_column='Id_LoaiChiPhi')  # Field name made lowercase.

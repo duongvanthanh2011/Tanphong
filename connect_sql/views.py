@@ -18,38 +18,10 @@ from datetime import datetime
 def index(request):
     return HttpResponse("hello world")
 
-# class SanPhamAPI(APIView):
-#     def get(self, request):
-#         # ORM --------------------------------
-#         queryset = Giasanpham.objects.values('id_sanpham', 'Ten', 'Trongluong', 'Gia')
-#         serializer = GiaSanPhamSerializer(queryset, many = True, )
-        # return Response(serializer.data)
-    
-        # with connection.cursor() as cursor:
-        #     cursor.execute('select * from "final_sp_gia"')
-        #     rows = cursor.fetchall()
-        # data = []
-        # for row in rows:
-        #     row_dict = {}
-        #     for index, column_name in enumerate(cursor.description):
-        #         row_dict[column_name[0]] = row[index]
-        #     data.append(row_dict)
-
-        # return Response(data)
-
-# class GiaSanPhamListCreateAPIView(generics.ListCreateAPIView):
-#     queryset =  Giasanpham.objects.all()
-#     serializer_class = GiaSanPhamSerializer
-#     # lookup_field = 'id_sanpham'
-
-# class GiaSanPhamRetrieveAPIView(generics.RetrieveAPIView):
-#     queryset =  Giasanpham.objects.all()
-#     serializer_class = GiaSanPhamSerializer
-#     # lookup_field = 'id_sanpham'
 
 class SanPhamAPIView(APIView):
     def get(self, request):
-        sanphams = Sanpham.objects.prefetch_related('sanphamnguyenlieu_set__id_nguyenlieu')
+        sanphams = Sanpham.objects.all()
         serializers_sanpham = SanPhamSerializer(sanphams, many = True)
 
         khachhang = Khachhang.objects.all()
@@ -74,7 +46,7 @@ class DonHangAPIView(APIView):
         gia_chiphi = sum([obj.gia for obj in chiphi])/24500
 
         choice_sanpham = request.data.get('listProduct')
-        sanpham = Giasanpham.objects.filter(id_sanpham__in = [sp['idProduct'] for sp in choice_sanpham])
+        sanpham = Sanpham.objects.filter(id_sanpham__in = [sp['idProduct'] for sp in choice_sanpham])
 
         id_next_donhang = self.get_next_id_donhang()
 
@@ -82,15 +54,15 @@ class DonHangAPIView(APIView):
             {
                 "id_donhang": id_next_donhang,
                 "id_sanpham": sanpham[index].id_sanpham,
-                "trongluongnet_kg_field": sanpham[index].Soluongchai_thung * sanpham[index].Trongluong * choice_sanpham[index]['quantity'],
+                "trongluongnet_kg_field": sanpham[index].soluongchai_thung * sanpham[index].trongluong * choice_sanpham[index]['quantity'],
                 "trongluonggross_kg_field": None,
-                "trongluongnet_chai_kg_field": sanpham[index].Trongluong,
+                "trongluongnet_chai_kg_field": sanpham[index].trongluong,
                 "soluongthung": choice_sanpham[index]['quantity'],
-                "giasanpham_kg": (sanpham[index].Gia + gia_chiphi)/sanpham[index].Trongluong,
-                "soluongchai": choice_sanpham[index]['quantity'] * sanpham[index].Soluongchai_thung,
-                "trongluongnet_thung_kg_field": sanpham[index].Soluongchai_thung * sanpham[index].Trongluong,
+                "giasanpham_kg": (sanpham[index].gia + gia_chiphi)/sanpham[index].trongluong,
+                "soluongchai": choice_sanpham[index]['quantity'] * sanpham[index].soluongchai_thung,
+                "trongluongnet_thung_kg_field": sanpham[index].soluongchai_thung * sanpham[index].trongluong,
                 "trongluonggross_thung_kg_field": None,
-                "tonggiasanpham": (sanpham[index].Gia + gia_chiphi)*choice_sanpham[index]['quantity'] * sanpham[index].Soluongchai_thung
+                "tonggiasanpham": (sanpham[index].gia + gia_chiphi)*choice_sanpham[index]['quantity'] * sanpham[index].soluongchai_thung
             }
             for index in range(len(sanpham))
         ]
@@ -131,7 +103,7 @@ class DonHangAPIView(APIView):
         if serializers_donhang.is_valid():
             serializers_donhang.save()
         
-            serializers_chitietdonhang= ChiTietDonHangSerializer(data = data_request['chitietdonhang'], many = True)
+            serializers_chitietdonhang = ChiTietDonHangSerializer(data = data_request['chitietdonhang'], many = True)
             if serializers_chitietdonhang.is_valid():
                 serializers_chitietdonhang.save()
                 return Response({
@@ -139,28 +111,4 @@ class DonHangAPIView(APIView):
                     "ChiTietDonHang": serializers_chitietdonhang.data
                 })
             
-        HttpResponse("False")      
-
-
-class SanPhamListCreateAPIView(generics.ListAPIView):
-    queryset = Sanpham.objects.prefetch_related('sanphamnguyenlieu_set__id_nguyenlieu')
-    serializer_class = SanPhamSerializer
-
-
-class SanPhamRetrieveAPIView(generics.RetrieveAPIView):
-    queryset = Sanpham.objects.all()
-    serializer_class = SanPhamSerializer
-
-
-class KhachhangListView(generics.ListAPIView):
-    serializer_class = KhachHangSerializer
-
-    def get_queryset(self):
-        id_khachhang_list = self.request.data.get('id_khachhang_list', [])
-        return Khachhang.objects.filter(id_khachhang__in=id_khachhang_list)
-
-
-
-# class CongThucListCreateAPIView(generics.ListCreateAPIView):
-#     queryset = San.objects.all()
-#     serializer_class = CongThucSerializer
+        HttpResponse("False")

@@ -4,11 +4,6 @@ from rest_framework.reverse import reverse
 from .models import *
 
 
-
-class GiaSanPhamSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Giasanpham
-        fields = "__all__"
     
 class KhachHangSerializer(serializers.ModelSerializer):
     class Meta:
