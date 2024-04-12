@@ -12,7 +12,6 @@ from .serializers import *
 from pprint import pprint
 
 from datetime import datetime
-import pandas as pd
 
 
 def index(request):
