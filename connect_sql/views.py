@@ -34,7 +34,13 @@ class SanPhamAPIView(APIView):
         serializers_chiphi = ChiPhiSerializer(chiphi, many = True)
 
 
-        donhang = Donhang.objects.annotate(
+        donhang = Donhang.objects.values(
+            "contractno",
+            "shippingline",
+            "shippedper",
+            "portofloading",
+            "placeofdelivery"
+        ).annotate(
             contractno_count=Count('contractno'),
             shippingline_count=Count('shippingline'),
             shippedper_count=Count('shippedper'),
