@@ -12,7 +12,7 @@ from .serializers import *
 from pprint import pprint
 
 from datetime import datetime
-
+import pandas as pd
 
 
 def index(request):
@@ -33,10 +33,29 @@ class SanPhamAPIView(APIView):
         chiphi = Chiphi.objects.exclude(id_loaichiphi = 2)
         serializers_chiphi = ChiPhiSerializer(chiphi, many = True)
 
+        donhang = Donhang.objects.values(
+            "contractno",
+            "shippingline",
+            "shippedper",
+            "portofloading",
+            "placeofdelivery"
+        )
+        df_donhang = pd.DataFrame(donhang)
+        contractno = df_donhang['contractno'].value_counts().index
+        shippingline = df_donhang['shippingline'].value_counts().index
+        shippedper = df_donhang['shippedper'].value_counts().index
+        portofloading = df_donhang['portofloading'].value_counts().index
+        placeofdelivery = df_donhang['placeofdelivery'].value_counts().index
+
         return Response({'sanpham':serializers_sanpham.data, 
                          'khachhang':serializer_khachhang.data, 
                          'packagking':serializers_packaging.data, 
-                         'chiphi':serializers_chiphi.data})
+                         'chiphi':serializers_chiphi.data,
+                         "contractno": contractno,
+                         "shippingline":shippingline,
+                         "shippedper":shippedper,
+                         "portofloading":portofloading,
+                         "placeofdelivery": placeofdelivery})
 
 
 class DonHangAPIView(APIView):
