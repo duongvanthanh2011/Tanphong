@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.db import connection
-from django.db.models import Sum, F, ExpressionWrapper, FloatField
+from django.db.models import Count
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -33,19 +33,21 @@ class SanPhamAPIView(APIView):
         chiphi = Chiphi.objects.exclude(id_loaichiphi = 2)
         serializers_chiphi = ChiPhiSerializer(chiphi, many = True)
 
-        donhang = Donhang.objects.values(
-            "contractno",
-            "shippingline",
-            "shippedper",
-            "portofloading",
-            "placeofdelivery"
+
+        donhang = Donhang.objects.annotate(
+            contractno_count=Count('contractno'),
+            shippingline_count=Count('shippingline'),
+            shippedper_count=Count('shippedper'),
+            portofloading_count=Count('portofloading'),
+            placeofdelivery_count=Count('placeofdelivery')
         )
-        df_donhang = pd.DataFrame(donhang)
-        contractno = df_donhang['contractno'].value_counts().index
-        shippingline = df_donhang['shippingline'].value_counts().index
-        shippedper = df_donhang['shippedper'].value_counts().index
-        portofloading = df_donhang['portofloading'].value_counts().index
-        placeofdelivery = df_donhang['placeofdelivery'].value_counts().index
+
+        contractno = donhang.values_list("contractno", flat=True).distinct()
+        shippingline = donhang.values_list("shippingline", flat=True).distinct()
+        shippedper = donhang.values_list("shippedper", flat=True).distinct()
+        portofloading = donhang.values_list("portofloading", flat=True).distinct()
+        placeofdelivery = donhang.values_list("placeofdelivery", flat=True).distinct()
+
 
         return Response({'sanpham':serializers_sanpham.data, 
                          'khachhang':serializer_khachhang.data, 
