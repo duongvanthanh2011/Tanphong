@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.db import connection
-from django.db.models import Count
+from django.db.models import Count, CharField
+from django.db.models.functions import Cast
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -72,26 +73,30 @@ class DonHangAPIView(APIView):
         gia_chiphi = sum([obj.gia for obj in chiphi])/24500
 
         choice_sanpham = request.data.get('listProduct')
-        sanpham = Sanpham.objects.filter(id_sanpham__in = [sp['idProduct'] for sp in choice_sanpham])
+
+        id_list = [sp['idProduct'] for sp in choice_sanpham]
+        sanpham = Sanpham.objects.filter(id_sanpham__in=id_list)        
+        sanpham = sorted(sanpham, key=lambda x: id_list.index(x.id_sanpham))
 
         id_next_donhang = self.get_next_id_donhang()
 
         chitietdonhang_data = [
-            {
+            {   
                 "id_donhang": id_next_donhang,
-                "id_sanpham": sanpham[index].id_sanpham,
-                "trongluongnet_kg_field": sanpham[index].soluongchai_thung * sanpham[index].trongluong * choice_sanpham[index]['quantity'],
+                "id_sanpham": sp.id_sanpham,
+                "trongluongnet_kg_field": sp.soluongchai_thung * sp.trongluong * choice_sanpham[index]['quantity'],
                 "trongluonggross_kg_field": None,
-                "trongluongnet_chai_kg_field": sanpham[index].trongluong,
+                "trongluongnet_chai_kg_field": sp.trongluong,
                 "soluongthung": choice_sanpham[index]['quantity'],
-                "giasanpham_kg": (sanpham[index].gia + gia_chiphi)/sanpham[index].trongluong,
-                "soluongchai": choice_sanpham[index]['quantity'] * sanpham[index].soluongchai_thung,
-                "trongluongnet_thung_kg_field": sanpham[index].soluongchai_thung * sanpham[index].trongluong,
+                "giasanpham_kg": (sp.gia + gia_chiphi)/sp.trongluong,
+                "soluongchai": choice_sanpham[index]['quantity'] * sp.soluongchai_thung,
+                "trongluongnet_thung_kg_field": sp.soluongchai_thung * sp.trongluong,
                 "trongluonggross_thung_kg_field": None,
-                "tonggiasanpham": (sanpham[index].gia + gia_chiphi)*choice_sanpham[index]['quantity'] * sanpham[index].soluongchai_thung
+                "tonggiasanpham": (sp.gia + gia_chiphi) * choice_sanpham[index]['quantity'] * sp.soluongchai_thung
             }
-            for index in range(len(sanpham))
+            for index, sp in enumerate(sanpham)
         ]
+
         donhang_data = {
             'id_donhang': id_next_donhang,
             'ngay': datetime.now(),
