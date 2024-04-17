@@ -81,7 +81,7 @@ class DonHangAPIView(APIView):
         id_next_donhang = self.get_next_id_donhang()
 
         chitietdonhang_data = [
-            {   'Gia': [sp.gia*24500, sp.gia + gia_chiphi, (sp.gia + gia_chiphi)/sp.trongluong],
+            {   
                 "id_donhang": id_next_donhang,
                 "id_sanpham": sp.id_sanpham,
                 "trongluongnet_kg_field": sp.soluongchai_thung * sp.trongluong * choice_sanpham[index]['quantity'],
@@ -96,7 +96,7 @@ class DonHangAPIView(APIView):
             }
             for index, sp in enumerate(sanpham)
         ]
-        pprint(chitietdonhang_data)
+
         donhang_data = {
             'id_donhang': id_next_donhang,
             'ngay': datetime.now(),
