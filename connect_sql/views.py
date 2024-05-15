@@ -73,7 +73,11 @@ class DonHangAPIView(APIView):
         chiphi = Chiphi.objects.filter(id_chiphi__in = choice_chiphi)
         gia_chiphi = sum([obj.gia for obj in chiphi])/24500
         
-        trongluong_chiphi = sum([obj.trongluong for obj in chiphi.filter(trongluong__isnull = False)])
+        trongluong_dongchai = sum([obj.trongluong for obj in chiphi.filter(id_loaichiphi = 2, trongluong__isnull=False)])/1000
+        print(trongluong_dongchai)
+        trongluong_dongthung = sum([obj.trongluong for obj in chiphi.filter(id_loaichiphi = 6, trongluong__isnull=False)])/1000
+
+        trongluong_sailech = request.data.get("weightDifference")
 
         choice_sanpham = request.data.get('listProduct')
 
@@ -88,13 +92,13 @@ class DonHangAPIView(APIView):
                 "id_donhang": id_next_donhang,
                 "id_sanpham": sp.id_sanpham,
                 "trongluongnet_kg_field": sp.soluongchai_thung * sp.trongluong * choice_sanpham[index]['quantity'],
-                "trongluonggross_kg_field": None,
+                "trongluonggross_kg_field": (sp.soluongchai_thung * (sp.trongluong + trongluong_sailech + trongluong_dongchai) + trongluong_dongthung) * choice_sanpham[index]['quantity'],
                 "trongluongnet_chai_kg_field": sp.trongluong,
                 "soluongthung": choice_sanpham[index]['quantity'],
                 "giasanpham_kg": (sp.gia + gia_chiphi)/sp.trongluong,
                 "soluongchai": choice_sanpham[index]['quantity'] * sp.soluongchai_thung,
-                "trongluongnet_thung_kg_field": sp.soluongchai_thung * sp.trongluong,
-                "trongluonggross_thung_kg_field": sp.soluongchai_thung * (sp.trongluong + trongluong_chiphi),
+                "trongluongnet_thung_kg_field": sp.soluongchai_thung * (sp.trongluong + trongluong_sailech),
+                "trongluonggross_thung_kg_field": sp.soluongchai_thung * (sp.trongluong + trongluong_sailech + trongluong_dongchai) + trongluong_dongthung,
                 "tonggiasanpham": (sp.gia + gia_chiphi) * choice_sanpham[index]['quantity'] * sp.soluongchai_thung
             }
             for index, sp in enumerate(sanpham)
