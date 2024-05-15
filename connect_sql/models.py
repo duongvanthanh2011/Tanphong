@@ -15,11 +15,12 @@ class Sanpham(models.Model):
         db_table = 'SanPham'
         
 class Chiphi(models.Model):
-    id_chiphi = models.CharField(db_column='Id_ChiPhi', primary_key=True, max_length=20)  # Field name made lowercase.
+    id_chiphi = models.CharField(db_column='Id_ChiPhi', primary_key=True, max_length=100)  # Field name made lowercase.
     id_loaichiphi = models.ForeignKey('Loaichiphi', models.DO_NOTHING, db_column='Id_LoaiChiPhi')  # Field name made lowercase.
-    ten = models.CharField(db_column='Ten', max_length=20, blank=True, null=True)  # Field name made lowercase.
+    ten = models.CharField(db_column='Ten', max_length=100, blank=True, null=True)  # Field name made lowercase.
     chuthich = models.CharField(db_column='ChuThich', max_length=100, blank=True, null=True)  # Field name made lowercase.
     gia = models.FloatField(db_column='Gia', blank=True, null=True)  # Field name made lowercase.
+    trongluong = models.FloatField(db_column='TrongLuong', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -47,7 +48,7 @@ class Chitietdonhang(models.Model):
 
 class Donhang(models.Model):
     id_donhang = models.BigIntegerField(db_column='id_DonHang', primary_key=True)  # Field name made lowercase.
-    ngay = models.DateTimeField(db_column='Ngay', blank=True, null=True)  # Field name made lowercase.
+    ngaytao = models.DateTimeField(db_column='NgayTao', blank=True, null=True)  # Field name made lowercase.
     id_khachhang = models.ForeignKey('Khachhang', models.DO_NOTHING, db_column='id_KhachHang', blank=True, null=True)  # Field name made lowercase.   
     chuthich = models.CharField(db_column='ChuThich', max_length=100, blank=True, null=True)  # Field name made lowercase.
     contractno = models.CharField(db_column='ContractNo', max_length=100, blank=True, null=True)  # Field name made lowercase.
@@ -62,6 +63,8 @@ class Donhang(models.Model):
     tonggia = models.FloatField(db_column='TongGia', blank=True, null=True)  # Field name made lowercase.
     donvigiatien = models.CharField(db_column='DonViGiaTien', max_length=100, blank=True, null=True)  # Field name made lowercase.
     bookingno = models.CharField(db_column='BookingNo', max_length=100, blank=True, null=True)  # Field name made lowercase.
+    date = models.DateField(db_column='Date', blank=True, null=True)  # Field name made lowercase.
+    no = models.CharField(db_column='No', max_length=100, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -120,8 +123,9 @@ class Nguyenlieu(models.Model):
 class SanphamNguyenlieu(models.Model):
     id = models.BigIntegerField(db_column='Id', primary_key=True)  # Field name made lowercase.
     id_sanpham = models.ForeignKey(Sanpham, models.DO_NOTHING, db_column='Id_SanPham', blank=True, null=True)  # Field name made lowercase.
-    id_nguyenlieu = models.ForeignKey(Nguyenlieu, models.DO_NOTHING, db_column='Id_NguyenLieu', blank=True, null=True)  # Field name made lowercase.  
+    id_nguyenlieu = models.CharField(db_column='Id_NguyenLieu', max_length=100, blank=True, null=True)  # Field name made lowercase.
     trongluong = models.FloatField(db_column='TrongLuong', blank=True, null=True)  # Field name made lowercase.
+    phantramtrongluong = models.FloatField(db_column='PhanTramTrongLuong', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False

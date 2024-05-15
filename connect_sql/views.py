@@ -69,8 +69,11 @@ class SanPhamAPIView(APIView):
 class DonHangAPIView(APIView):
     def convert_data_request(self, request):
         choice_chiphi = request.data.get('chiphi') + request.data.get('packaging')
+        
         chiphi = Chiphi.objects.filter(id_chiphi__in = choice_chiphi)
         gia_chiphi = sum([obj.gia for obj in chiphi])/24500
+        
+        trongluong_chiphi = sum([obj.trongluong for obj in chiphi.filter(trongluong__isnull = False)])
 
         choice_sanpham = request.data.get('listProduct')
 
@@ -91,7 +94,7 @@ class DonHangAPIView(APIView):
                 "giasanpham_kg": (sp.gia + gia_chiphi)/sp.trongluong,
                 "soluongchai": choice_sanpham[index]['quantity'] * sp.soluongchai_thung,
                 "trongluongnet_thung_kg_field": sp.soluongchai_thung * sp.trongluong,
-                "trongluonggross_thung_kg_field": None,
+                "trongluonggross_thung_kg_field": sp.soluongchai_thung * (sp.trongluong + trongluong_chiphi),
                 "tonggiasanpham": (sp.gia + gia_chiphi) * choice_sanpham[index]['quantity'] * sp.soluongchai_thung
             }
             for index, sp in enumerate(sanpham)
@@ -99,7 +102,7 @@ class DonHangAPIView(APIView):
 
         donhang_data = {
             'id_donhang': id_next_donhang,
-            'ngay': datetime.now(),
+            'ngaytao': datetime.now(),
             'chuthich': None,
             'contractno': request.data.get('contract'),
             'shippingline': request.data.get('shippingLine'),
@@ -114,6 +117,8 @@ class DonHangAPIView(APIView):
             'donvigiatien': 'USD',
             'bookingno': request.data.get('bookingOn'),
             'id_khachhang': request.data.get('customer'),
+            'date': request.data.get('date'),
+            'no': request.data.get('no')
         }
 
         return {
