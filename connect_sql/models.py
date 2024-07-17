@@ -43,7 +43,7 @@ class Chitietdonhang(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'ChiTietDonhang'
+        db_table = 'ChiTietDonHang'
 
 
 class Donhang(models.Model):

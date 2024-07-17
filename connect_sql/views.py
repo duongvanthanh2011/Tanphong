@@ -74,7 +74,6 @@ class DonHangAPIView(APIView):
         gia_chiphi = sum([obj.gia for obj in chiphi])/24500
         
         trongluong_dongchai = sum([obj.trongluong for obj in chiphi.filter(id_loaichiphi = 2, trongluong__isnull=False)])/1000
-        print(trongluong_dongchai)
         trongluong_dongthung = sum([obj.trongluong for obj in chiphi.filter(id_loaichiphi = 6, trongluong__isnull=False)])/1000
 
         trongluong_sailech = request.data.get("weightDifference")
@@ -84,6 +83,7 @@ class DonHangAPIView(APIView):
         id_list = [sp['idProduct'] for sp in choice_sanpham]
         sanpham = Sanpham.objects.filter(id_sanpham__in=id_list)        
         sanpham = sorted(sanpham, key=lambda x: id_list.index(x.id_sanpham))
+   
 
         id_next_donhang = self.get_next_id_donhang()
 
@@ -131,7 +131,10 @@ class DonHangAPIView(APIView):
         }
      
     def get_next_id_donhang(self):
-        next_id = Donhang.objects.latest('id_donhang').id_donhang
+        try:
+            next_id = Donhang.objects.latest('id_donhang').id_donhang
+        except:
+            next_id = 0
         while Donhang.objects.filter(id_donhang = next_id).exists():
             next_id += 1
         return next_id
