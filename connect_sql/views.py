@@ -91,13 +91,13 @@ class DonHangAPIView(APIView):
                 "id_donhang": id_next_donhang,
                 "id_sanpham": sp.id_sanpham,
                 "trongluongnet_kg_field": sp.soluongchai_thung * sp.trongluong * choice_sanpham[index]['quantity'],
-                "trongluonggross_kg_field": (sp.soluongchai_thung * (sp.trongluong + trongluong_sailech + trongluong_dongchai) + trongluong_dongthung) * choice_sanpham[index]['quantity'],
+                "trongluonggross_kg_field": round((sp.soluongchai_thung * (sp.trongluong + trongluong_sailech + trongluong_dongchai) + trongluong_dongthung) * choice_sanpham[index]['quantity'],2),
                 "trongluongnet_chai_kg_field": sp.trongluong,
                 "soluongthung": choice_sanpham[index]['quantity'],
                 "giasanpham_kg": (sp.gia + gia_chiphi)/sp.trongluong,
                 "soluongchai": choice_sanpham[index]['quantity'] * sp.soluongchai_thung,
                 "trongluongnet_thung_kg_field": sp.soluongchai_thung * (sp.trongluong + trongluong_sailech),
-                "trongluonggross_thung_kg_field": sp.soluongchai_thung * (sp.trongluong + trongluong_sailech + trongluong_dongchai) + trongluong_dongthung,
+                "trongluonggross_thung_kg_field": round(sp.soluongchai_thung * (sp.trongluong + trongluong_sailech + trongluong_dongchai) + trongluong_dongthung,2),
                 "tonggiasanpham": (sp.gia + gia_chiphi) * choice_sanpham[index]['quantity'] * sp.soluongchai_thung
             }
             for index, sp in enumerate(sanpham)
