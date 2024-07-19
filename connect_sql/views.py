@@ -33,7 +33,6 @@ class SanPhamAPIView(APIView):
         chiphi = Chiphi.objects.exclude(id_loaichiphi = 2)
         serializers_chiphi = ChiPhiSerializer(chiphi, many = True)
 
-
         donhang = Donhang.objects.values(
             "contractno",
             "shippingline",
@@ -83,7 +82,7 @@ class DonHangAPIView(APIView):
         id_list = [sp['idProduct'] for sp in choice_sanpham]
         sanpham = Sanpham.objects.filter(id_sanpham__in=id_list)        
         sanpham = sorted(sanpham, key=lambda x: id_list.index(x.id_sanpham))
-   
+        print([i.gia for i in sanpham])
 
         id_next_donhang = self.get_next_id_donhang()
 
@@ -103,6 +102,8 @@ class DonHangAPIView(APIView):
             }
             for index, sp in enumerate(sanpham)
         ]
+
+        print([i['giasanpham_kg']*i['trongluongnet_chai_kg_field'] for i in chitietdonhang_data])
 
         donhang_data = {
             'id_donhang': id_next_donhang,
@@ -153,5 +154,6 @@ class DonHangAPIView(APIView):
                     "DonHang": serializers_donhang.data,
                     "ChiTietDonHang": serializers_chitietdonhang.data
                 })
-            
-        HttpResponse("False")
+            return Response(serializers_chitietdonhang.errors)
+
+        return Response(serializers_donhang.errors)
