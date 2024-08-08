@@ -3,10 +3,12 @@ from django.http import HttpResponse
 from django.db import connection
 from django.db.models import Count, CharField
 from django.db.models.functions import Cast
-
+from django.db.models import F
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import generics, mixins
+
+from collections import defaultdict
 
 from .models import *
 from .serializers import *
@@ -90,14 +92,14 @@ class DonHangAPIView(APIView):
             {   
                 "id_donhang": id_next_donhang,
                 "id_sanpham": sp.id_sanpham,
-                "trongluongnet_kg_field": sp.soluongchai_thung * sp.trongluong * choice_sanpham[index]['quantity'],
-                "trongluonggross_kg_field": round((sp.soluongchai_thung * (sp.trongluong + trongluong_sailech + trongluong_dongchai) + trongluong_dongthung) * choice_sanpham[index]['quantity'],2),
+                "trongluongnet_kg_field": sp.soluongchai_thung * sp.trongluong * choice_sanpham[index]['quantity'], #tổng trọng lượng net
+                "trongluonggross_kg_field": round((sp.soluongchai_thung * (sp.trongluong + trongluong_sailech + trongluong_dongchai) + trongluong_dongthung) * choice_sanpham[index]['quantity'],2),#tổng trọng lượng gross
                 "trongluongnet_chai_kg_field": sp.trongluong,
                 "soluongthung": choice_sanpham[index]['quantity'],
                 "giasanpham_kg": (sp.gia + gia_chiphi)/sp.trongluong,
                 "soluongchai": choice_sanpham[index]['quantity'] * sp.soluongchai_thung,
-                "trongluongnet_thung_kg_field": sp.soluongchai_thung * (sp.trongluong + trongluong_sailech),
-                "trongluonggross_thung_kg_field": round(sp.soluongchai_thung * (sp.trongluong + trongluong_sailech + trongluong_dongchai) + trongluong_dongthung,2),
+                "trongluongnet_thung_kg_field": sp.soluongchai_thung * (sp.trongluong + trongluong_sailech), #trọng lượng net/thùng
+                "trongluonggross_thung_kg_field": round(sp.soluongchai_thung * (sp.trongluong + trongluong_sailech + trongluong_dongchai) + trongluong_dongthung,2),#trong lượng gross/thùng
                 "tonggiasanpham": (sp.gia + gia_chiphi) * choice_sanpham[index]['quantity'] * sp.soluongchai_thung
             }
             for index, sp in enumerate(sanpham)
@@ -150,10 +152,79 @@ class DonHangAPIView(APIView):
             serializers_chitietdonhang = ChiTietDonHangSerializer(data = data_request['chitietdonhang'], many = True)
             if serializers_chitietdonhang.is_valid():
                 serializers_chitietdonhang.save()
+
+                backward_info = self.get_backward_info(data_request['donhang'], data_request['chitietdonhang'])
                 return Response({
                     "DonHang": serializers_donhang.data,
-                    "ChiTietDonHang": serializers_chitietdonhang.data
+                    "ChiTietDonHang": serializers_chitietdonhang.data,
+                    "BackwardInfo": backward_info
                 })
             return Response(serializers_chitietdonhang.errors)
 
         return Response(serializers_donhang.errors)
+    
+
+    def get_backward_info(self, donhang_data, chitietdonhang_data):
+        backward_info = []
+        total_weight_by_material = {} 
+
+        for chitiet in chitietdonhang_data:
+            sanpham = Sanpham.objects.get(id_sanpham=chitiet['id_sanpham'])
+            
+            # Lấy thông tin nguyên liệu từ bảng SanphamNguyenlieu
+            nguyenlieu_info = SanphamNguyenlieu.objects.filter(
+                id_sanpham=sanpham.id_sanpham
+            ).annotate(
+                ten_nguyenlieu=F('id_nguyenlieu'),
+                phan_tram=F('phantramtrongluong')
+            ).values('ten_nguyenlieu', 'phan_tram')
+
+            # Tính trọng lượng của từng nguyên liệu cho sản phẩm
+            materials_weight = {}
+            for nguyenlieu in nguyenlieu_info:
+                material_id = nguyenlieu['ten_nguyenlieu']
+                percentage = nguyenlieu['phan_tram']
+                weight = chitiet['trongluongnet_kg_field'] * (percentage / 100)
+                
+                # Lấy tên nguyên liệu từ bảng Nguyenlieu
+                material = Nguyenlieu.objects.get(id_nguyenlieu=material_id)
+                material_name = material.ten
+
+                if material_id in materials_weight:
+                    materials_weight[material_id]['trongluong'] += weight
+                else:
+                    materials_weight[material_id] = {
+                        'id_nguyenlieu': material_id,
+                        'ten_nguyenlieu': material_name,
+                        'trongluong': weight,
+                        'phan_tram': percentage
+                    }
+
+                # Cộng tổng trọng lượng của nguyên liệu
+                if material_id in total_weight_by_material:
+                    total_weight_by_material[material_id]['trongluong']  += weight
+                else:
+                    total_weight_by_material[material_id] = {
+                    'id_nguyenlieu': material_id,
+                    'ten_nguyenlieu': material_name,
+                    'trongluong': weight
+                }
+            backward_info.append({
+                'ten_sanpham': sanpham.ten,
+                'trongluong_net': chitiet['trongluongnet_kg_field'],
+                'nguyen_lieu': [
+                {
+                    'id_nguyenlieu': info['id_nguyenlieu'],
+                    'ten_nguyenlieu': info['ten_nguyenlieu'],
+                    'trongluong': info['trongluong'],
+                    'phan_tram': info['phan_tram']
+                }
+                for info in materials_weight.values()
+            ]
+            })
+
+        return {
+            "backward_info": backward_info,
+            "total_weight_by_material": total_weight_by_material
+        }
+    
